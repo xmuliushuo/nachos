@@ -1,0 +1,29 @@
+Installing and Building Nachos
+On the ITS Solaris SPARC machine 
+(These instructions assume that you are using i5.nyu.edu)
+Create a directory in which to unpack the code directory. I suggest V22.0202 or v22.0202 in your home directory to make it easy for us to find. 
+
+mkdir dirname
+cd dirname
+tar xf /home1/v/vk18/OS/code-solaris.tar 
+cd nachos-3.4/code
+make 
+
+Verify before you do any of the above that GNU make (make on i5.nyu.edu), and gcc are in your path, and that your LD_LIBRARY_PATH environment variable includes /usr/local/lib. Expect the first Nachos build to take a few minutes.  
+
+On a Linux/x86 machine:
+Download the version of the Nachos source that has been customized for Linux/x86 (code-linux.tar.gz) from the Nachos Resources page(http://www.cs.nyu.edu/courses/spring05/V22.0202-001/nachos-resources.htm). Unpack this file into a directory on your machine:
+
+mkdir dirname
+cd dirname
+tar zxf <path to downloaded code-linux.tar.gz>
+cd nachos-3.4/code
+make
+
+You should end up with two subdirectories: nachos-3.4 and gnu-decstation-ultrix. Please do not delete any of the files (or otherwise modify the structure) in the gnu-decstation-ultrix subdirectory. These files are required to allow you to compile user-level programs for Nachos, which rely on a MIPS cross-compiler (see the Nachos Project Guide for additional details).
+
+Verify before you do any of the above that GNU make (make on Linux), and gcc are in your path, and that your LD_LIBRARY_PATH environment variable includes /usr/local/lib. Expect the first Nachos build to take a few minutes. 
+
+Adding New Files to the Nachos build
+Modify Makefile.common in the code directory, supplementing THREAD_*, USERPROG_*, ... lists. Use tabs, not spaces! Remember to do a 'make depend' in the threads directory. 
+
