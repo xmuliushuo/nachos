@@ -65,9 +65,22 @@ DLList::Prepend(void *item)
 void *
 DLList::Remove(int *keyPtr)
 {
-	// TODO
-    //return SortedRemove(keyPtr);  // Same as SortedRemove, but ignore the key
-	return NULL;
+	if (IsEmpty())
+		return NULL;
+	DLLElement *element = first;
+	void *thing;
+	thing = element->item;
+	if (first == last) {
+		first = NULL;
+		last = NULL;
+	}
+	else {
+		first = first->next;
+		first->prev = NULL;
+	}
+	*keyPtr = element->key;
+	delete element;
+	return thing;
 }
 
 // return true if list has elements
@@ -114,25 +127,41 @@ DLList::SortedInsert(void *item, int sortKey)
 // remove first item with key==sortKey
 // return NULL if no such item exists
 void *
-List::SortedRemove(int *keyPtr)
+DLList::SortedRemove(int sortKey)
 {
-	// TODO
 	return NULL;
-//    ListElement *element = first;
-//    void *thing;
-//
-//    if (IsEmpty())
-//	return NULL;
-//
-//    thing = first->item;
-//    if (first == last) {	// list had one item, now has none
-//        first = NULL;
-//	last = NULL;
-//    } else {
-//        first = element->next;
-//    }
-//    if (keyPtr != NULL)
-//        *keyPtr = element->key;
-//    delete element;
-//    return thing;
+	if (IsEmpty())
+		return NULL;
+	DLLElement *element;
+	for (DLLElement *ptr = first; ptr != NULL; ptr = ptr->next) {
+		if (sortKey == ptr->key) {
+			element = ptr;
+			if (ptr == first) {
+				if (first == last) {
+					first = last = NULL;
+				}
+				else {
+					first = ptr->next;
+					first->prev = NULL;
+				}
+			}
+			else if (ptr == last){
+				last = ptr->prev;
+				last->next = NULL;
+			}
+			else {
+				ptr->prev->next = ptr->next;
+				ptr->next->prev = ptr->prev;
+			}
+			break;
+		}
+	}
+	if (element != NULL) {
+		delete element;
+		void *thing = element->item;
+		return thing;
+	}
+	else {
+		return NULL;
+	}
 }
