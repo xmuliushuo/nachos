@@ -6,7 +6,10 @@
  */
 
 #include "dllist.h"
-#include "utility.h"
+//#include "utility.h"
+#include <stdio.h>
+#define TRUE 1
+#define FALSE 0
 
 DLLElement::DLLElement(void *itemPtr, int sortKey):
 			next(NULL),
