@@ -1,0 +1,57 @@
+Setting Globals from the Command Line
+
+For the Nachos assignments this semester, you may want to change what Nachos does without recompiling. An example of this is to choose a different yield point in Lab 1.
+
+Rather than coding in different command line flags every time, here's some code that lets you assign a value to an arbitrary integer global variable from the command line.
+
+example use: nachos -set my_global_name 3
+
+assigns the value 3 to the global integer 'my_global_name' before anything important happens. (WARNING: constructors for global objects run BEFORE the set command line flag is interpreted, always use 'new' for global objects if you want -set to work.)
+
+Here's the code, add it to threads/system.cc as directed: (don't forget to edit Makefile.dep as detailed below)
+
+at the top, add:
+
+#include < nlist.h >
+char *_programname;
+void Umem_SetInt(char *, int);
+ 
+edit Initialize(int argc, char **argv), add:
+ 
+_programname = argv[0];
+ 
+before the 'for' loop, and
+ 
+if (!strcmp(*argv, "-set")) {
+      Umem_SetInt(*(argv + 1), atoi(*(argv + 2))); // set a global
+      argCount = 2;
+}
+ 
+between the "argCount = 1" and "if (!strcmp(*argv, "-d")) {" lines.
+and at the end of system.cc, add:
+
+//----------------------------------------------------------------------
+// Umem_SetInt
+//      Allow the user to assign a value to an arbitrary integer global
+//      variable from the command line.
+//----------------------------------------------------------------------
+ 
+void
+Umem_SetInt(char *varname, int value)
+{
+     struct nlist nl[2];
+ 
+     nl[0].n_name = varname;
+     nl[1].n_name = 0;
+     if ((nlist(_programname, nl) < 0) || !nl[0].n_value) {
+          if (!nl[0].n_value)
+               fprintf(stderr, "error setting variable %s: doesn't exist\n", varname);
+          else {
+               fprintf(stderr, "error setting variable %s:", varname);
+               perror("nlist");
+          }
+          exit(1);
+     }
+     *(int *)nl[0].n_value = value;
+}
+finally, add "-lelf" to the end of LDFLAGS in code/Makefile.dep

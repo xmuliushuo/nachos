@@ -21,7 +21,7 @@
 #    from agate.berkeley.edu)
 # also, Linux
 HOST = -DHOST_i386
-LDFLAGS =
+LDFLAGS = -lelf
 
 # slight variant for 386 FreeBSD
 # HOST = -DHOST_i386 -DFreeBSD

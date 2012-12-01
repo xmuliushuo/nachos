@@ -86,12 +86,19 @@ main(int argc, char **argv)
 
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
-    
+    DEBUG('u', "testnum: %d\n", testnum);
 #ifdef THREADS
+    for (int i = 0; i < argc; i++) {
+    	DEBUG('u', "argv[%d]: %s\n", i, argv[i]);
+    }
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
       argCount = 1;
+      //DEBUG('u', "argv[0]: %s\n", argv[0]);
+      //DEBUG('u', "argv[0][1]: %c\n", argv[0][1]);
       switch (argv[0][1]) {
+      // -q <testnum> sets testnum in threadtest.cc
       case 'q':
+    	//DEBUG('u', "argv[1]: %s\n", argv[1]);
         testnum = atoi(argv[1]);
         argCount++;
         break;

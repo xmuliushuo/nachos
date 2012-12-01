@@ -8,6 +8,10 @@
 #include "copyright.h"
 #include "system.h"
 
+#include <nlist.h>
+char *_programname;
+void Umem_SetInt(char *, int);
+
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
@@ -91,9 +95,13 @@ Initialize(int argc, char **argv)
     double rely = 1;		// network reliability
     int netname = 0;		// UNIX socket name
 #endif
-    
+    _programname = argv[0];
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
+	if (!strcmp(*argv, "-set")) {
+		Umem_SetInt(*(argv + 1), atoi(*(argv + 2))); // set a global
+		argCount = 2;
+	}
 	if (!strcmp(*argv, "-d")) {
 	    if (argc == 1)
 		debugArgs = "+";	// turn on all debug flags
@@ -195,3 +203,27 @@ Cleanup()
     Exit(0);
 }
 
+//----------------------------------------------------------------------
+// Umem_SetInt
+//      Allow the user to assign a value to an arbitrary integer global
+//      variable from the command line.
+//----------------------------------------------------------------------
+
+void
+Umem_SetInt(char *varname, int value)
+{
+     struct nlist nl[2];
+
+     nl[0].n_name = varname;
+     nl[1].n_name = 0;
+     if ((nlist(_programname, nl) < 0) || !nl[0].n_value) {
+          if (!nl[0].n_value)
+               fprintf(stderr, "error setting variable %s: doesn't exist\n", varname);
+          else {
+               fprintf(stderr, "error setting variable %s:", varname);
+               perror("nlist");
+          }
+          Exit(1);
+     }
+     *(int *)nl[0].n_value = value;
+}
