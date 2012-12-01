@@ -1,0 +1,8 @@
+*.o
+code/bin/coff2noff
+code/filesys/nachos
+code/network/nachos
+code/threads/nachos
+code/userprog/nachos
+code/vm/nachos
+*~
