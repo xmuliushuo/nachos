@@ -11,9 +11,19 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "dllist.h"
 
 // testnum is set in main.cc
-int testnum = 1;
+int testnum = 2;
+
+// T and N are used in lab1
+int T = 1;
+int N = 1;
+
+DLList *list;
+
+extern void InsertNItemsToDLList(DLList *list, int N);
+extern void RemoveNItemsFromDLList(DLList *list, int N);
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -30,9 +40,20 @@ SimpleThread(int which)
     int num;
     
     for (num = 0; num < 5; num++) {
-	printf("*** thread %d looped %d times\n", which, num);
+    	printf("*** thread %d looped %d times\n", which, num);
         currentThread->Yield();
     }
+}
+
+void
+DLListTestThread(int which)
+{
+	// TODO
+	printf("*** thread %d starts\n", which);
+	InsertNItemsToDLList(list, N);
+	currentThread->Yield();
+	RemoveNItemsFromDLList(list, N);
+	currentThread->Yield();
 }
 
 //----------------------------------------------------------------------
@@ -52,6 +73,20 @@ ThreadTest1()
     SimpleThread(0);
 }
 
+void
+ThreadTest2()
+{
+	DEBUG('t', "Entering ThreadTest2\n");
+	DEBUG('t', "T: %d\n", T);
+	DEBUG('t', "N: %d\n", N);
+	list = new DLList();
+	for (int i = 1; i < T; i++) {
+		Thread *t = new Thread("forked thread");
+		t->Fork(DLListTestThread, i);
+	}
+	DLListTestThread(0);
+}
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -62,11 +97,14 @@ ThreadTest()
 {
     switch (testnum) {
     case 1:
-	ThreadTest1();
-	break;
+		ThreadTest1();
+		break;
+    case 2:
+    	ThreadTest2();
+    	break;
     default:
-	printf("No test specified.\n");
-	break;
+		printf("No test specified.\n");
+		break;
     }
 }
 

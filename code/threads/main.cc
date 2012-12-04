@@ -92,20 +92,17 @@ main(int argc, char **argv)
     	DEBUG('u', "argv[%d]: %s\n", i, argv[i]);
     }
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-      argCount = 1;
-      //DEBUG('u', "argv[0]: %s\n", argv[0]);
-      //DEBUG('u', "argv[0][1]: %c\n", argv[0][1]);
-      switch (argv[0][1]) {
-      // -q <testnum> sets testnum in threadtest.cc
-      case 'q':
-    	//DEBUG('u', "argv[1]: %s\n", argv[1]);
-        testnum = atoi(argv[1]);
-        argCount++;
-        break;
-      default:
-        testnum = 1;
-        break;
-      }
+		argCount = 1;
+		switch (argv[0][1]) {
+		// -q <testnum> sets testnum in threadtest.cc
+		case 'q':
+			testnum = atoi(argv[1]);
+			argCount++;
+			break;
+		default:
+			testnum = 2;
+			break;
+		}
     }
 
     ThreadTest();

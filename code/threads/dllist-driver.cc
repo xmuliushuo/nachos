@@ -6,18 +6,17 @@
  */
 
 #include "dllist.h"
-//#include "utility.h"
-#include <stdio.h>
+#include "utility.h"
 #include <time.h>
-#include <stdlib.h>
 
 void InsertNItemsToDLList(DLList *list, int N)
 {
 	int key;
-	srand(time(NULL));
+	RandomInit(time(NULL));
 	for (int i = 0; i < N; ++i) {
-		key = rand() % 100;
+		key = Random() % 100;
 		list->SortedInsert(NULL, key);
+		printf("item was inserted with key = %d\n", key);
 	}
 }
 
@@ -26,15 +25,14 @@ void RemoveNItemsFromDLList(DLList *list, int N)
 	int key;
 	for (int i = 0; i < N; ++i) {
 		list->Remove(&key);
-		printf("%d ", key);
+		printf("item was removed with key = %d\n", key);
 	}
-	printf("\n");
 }
 
-int main()
-{
-	DLList list;
-	InsertNItemsToDLList(&list, 10);
-	RemoveNItemsFromDLList(&list, 10);
-	return 0;
-}
+//int main()
+//{
+//	DLList list;
+//	InsertNItemsToDLList(&list, 10);
+//	RemoveNItemsFromDLList(&list, 10);
+//	return 0;
+//}
