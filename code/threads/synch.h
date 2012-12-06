@@ -72,7 +72,7 @@ class Lock {
     void Acquire(); // these are the only operations on a lock
     void Release(); // they are both *atomic*
 
-    bool isHeldByCurrentThread();	// true if the current thread
+    bool isHeldByCurrentThread() { return (thread == currentThread); }	// true if the current thread
 					// holds this lock.  Useful for
 					// checking in Release, and in
 					// Condition variable ops below.
@@ -80,8 +80,28 @@ class Lock {
   private:
     char* name;				// for debugging
     // plus some other stuff you'll need to define
+    Thread *thread;		//the thread who holds this lock
+    enum value {FREE, BUSY};
+    List *queue;
 };
-
+//class Lock {
+//  public:
+//    Lock(char* debugName);  		// initialize lock to be FREE
+//    ~Lock();				// deallocate lock
+//    char* getName() { return name; }	// debugging assist
+//
+//    void Acquire(); // these are the only operations on a lock
+//    void Release(); // they are both *atomic*
+//
+//    bool isHeldByCurrentThread();	// true if the current thread
+//					// holds this lock.  Useful for
+//					// checking in Release, and in
+//					// Condition variable ops below.
+//
+//  private:
+//    char* name;				// for debugging
+//    // plus some other stuff you'll need to define
+//};
 // The following class defines a "condition variable".  A condition
 // variable does not have a value, but threads may be queued, waiting
 // on the variable.  These are only operations on a condition variable: 

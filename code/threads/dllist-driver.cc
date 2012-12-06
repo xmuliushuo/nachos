@@ -7,12 +7,12 @@
 
 #include "dllist.h"
 #include "utility.h"
-#include <time.h>
+
 
 void InsertNItemsToDLList(DLList *list, int N)
 {
 	int key;
-	RandomInit(time(NULL));
+
 	for (int i = 0; i < N; ++i) {
 		key = Random() % 100;
 		list->SortedInsert(NULL, key);

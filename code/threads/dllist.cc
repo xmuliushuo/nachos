@@ -7,6 +7,7 @@
 
 #include "dllist.h"
 #include "utility.h"
+#include "system.h"
 //#include <stdio.h>
 //#define TRUE 1
 //#define FALSE 0
@@ -79,6 +80,7 @@ DLList::Remove(int *keyPtr)
 	}
 	else {
 		first = first->next;
+		currentThread->Yield();
 		first->prev = NULL;
 	}
 	*keyPtr = element->key;
@@ -115,6 +117,7 @@ DLList::SortedInsert(void *item, int sortKey)
     	for (DLLElement *ptr = first; ptr->next != NULL; ptr = ptr->next) {
     		if (sortKey < ptr->next->key) {
     			element->next = ptr->next;
+    			currentThread->Yield();
     			element->prev = ptr;
     			ptr->next->prev = element;
     			ptr->next = element;

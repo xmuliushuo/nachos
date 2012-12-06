@@ -52,7 +52,7 @@
 
 #include "utility.h"
 #include "system.h"
-
+#include <time.h>
 #ifdef THREADS
 extern int testnum;
 #endif
@@ -83,7 +83,7 @@ main(int argc, char **argv)
 {
     int argCount;			// the number of arguments 
 					// for a particular command
-
+    RandomInit(time(NULL));
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
     DEBUG('u', "testnum: %d\n", testnum);
