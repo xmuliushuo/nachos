@@ -8,6 +8,8 @@
 #ifndef DLLIST_H_
 #define DLLIST_H_
 
+#include "synch.h"
+
 class DLLElement {
 public:
 	DLLElement(void *itemPtr, int sortKey);// initialize a list element
@@ -36,6 +38,7 @@ public:
 private:
 	DLLElement *first;// head of the list, NULL if empty
 	DLLElement *last;// last element of the list, NULL if empty
+	Lock *lock;
 };
 
 

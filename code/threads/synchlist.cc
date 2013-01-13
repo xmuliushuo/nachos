@@ -74,7 +74,7 @@ SynchList::Remove()
 
     lock->Acquire();			// enforce mutual exclusion
     while (list->IsEmpty())
-	listEmpty->Wait(lock);		// wait until list isn't empty
+    	listEmpty->Wait(lock);		// wait until list isn't empty
     item = list->Remove();
     ASSERT(item != NULL);
     lock->Release();

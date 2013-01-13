@@ -23,7 +23,6 @@
 
 #include "copyright.h"
 #include "synch.h"
-#include "system.h"
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -92,7 +91,7 @@ Semaphore::V()
 
     thread = (Thread *)queue->Remove();
     if (thread != NULL)	   // make thread ready, consuming the V immediately
-	scheduler->ReadyToRun(thread);
+    	scheduler->ReadyToRun(thread);
     value++;
     (void) interrupt->SetLevel(oldLevel);
 }
@@ -128,9 +127,34 @@ void Lock::Release()
     (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 }
 
-Condition::Condition(char* debugName):name(debugName)
+Condition::Condition(char* debugName):name(debugName), queue(new List())
 { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+
+Condition::~Condition()
+{
+	delete queue;
+}
+
+void Condition::Wait(Lock* conditionLock)
+{
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
+	conditionLock->Release();
+	queue->Append((void *)currentThread);
+	currentThread->Sleep();
+	(void) interrupt->SetLevel(oldLevel);
+	conditionLock->Acquire();
+}
+
+void Condition::Signal(Lock* conditionLock)
+{
+	Thread *nextThread;
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	// TODO
+}
+
+void Condition::Broadcast(Lock* conditionLock)
+{
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	// TODO
+}

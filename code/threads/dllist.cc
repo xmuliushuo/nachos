@@ -23,12 +23,14 @@ DLLElement::DLLElement(void *itemPtr, int sortKey):
 
 DLList::DLList():
 		first(NULL),
-		last(NULL)
+		last(NULL),
+		lock(new Lock("dllist lock"))
 {
 }
 
 DLList::~DLList()
 {
+	delete lock;
     while (Remove(NULL) != NULL)
 	;	 // delete all the list elements
 }
@@ -36,6 +38,7 @@ DLList::~DLList()
 void
 DLList::Append(void *item)
 {
+	lock->Acquire();
     if (IsEmpty()) {		// list is empty
     	DLLElement *element = new DLLElement(item, 0);
 		first = element;
@@ -46,11 +49,13 @@ DLList::Append(void *item)
 		last->next = element;
 		last = element;
     }
+    lock->Release();
 }
 
 void
 DLList::Prepend(void *item)
 {
+	lock->Acquire();
     if (IsEmpty()) {		// list is empty
     	DLLElement *element = new DLLElement(item, 0);
 		first = element;
@@ -61,6 +66,7 @@ DLList::Prepend(void *item)
 		first->prev = element;
 		first = element;
     }
+    lock->Release();
 }
 
 // remove from head of list
@@ -69,8 +75,11 @@ DLList::Prepend(void *item)
 void *
 DLList::Remove(int *keyPtr)
 {
-	if (IsEmpty())
+	lock->Acquire();
+	if (IsEmpty()) {
+		lock->Release();
 		return NULL;
+	}
 	DLLElement *element = first;
 	void *thing;
 	thing = element->item;
@@ -85,6 +94,7 @@ DLList::Remove(int *keyPtr)
 	}
 	*keyPtr = element->key;
 	delete element;
+	lock->Release();
 	return thing;
 }
 
@@ -102,6 +112,7 @@ DLList::IsEmpty()
 void
 DLList::SortedInsert(void *item, int sortKey)
 {
+	lock->Acquire();
     DLLElement *element = new DLLElement(item, sortKey);
     if (IsEmpty()) {
     	first = element;
@@ -121,6 +132,7 @@ DLList::SortedInsert(void *item, int sortKey)
     			element->prev = ptr;
     			ptr->next->prev = element;
     			ptr->next = element;
+    			lock->Release();
     			return;
     		}
     	}
@@ -128,6 +140,7 @@ DLList::SortedInsert(void *item, int sortKey)
     	element->prev = last;
     	last = element;
     }
+    lock->Release();
 }
 
 // remove first item with key==sortKey
@@ -135,9 +148,11 @@ DLList::SortedInsert(void *item, int sortKey)
 void *
 DLList::SortedRemove(int sortKey)
 {
-	return NULL;
-	if (IsEmpty())
+	lock->Acquire();
+	if (IsEmpty()) {
+		lock->Release();
 		return NULL;
+	}
 	DLLElement *element;
 	for (DLLElement *ptr = first; ptr != NULL; ptr = ptr->next) {
 		if (sortKey == ptr->key) {
@@ -165,9 +180,11 @@ DLList::SortedRemove(int sortKey)
 	if (element != NULL) {
 		delete element;
 		void *thing = element->item;
+		lock->Release();
 		return thing;
 	}
 	else {
+		lock->Release();
 		return NULL;
 	}
 }
