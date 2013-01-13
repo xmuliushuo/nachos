@@ -32,7 +32,7 @@
 //	"initialValue" is the initial value of the semaphore.
 //----------------------------------------------------------------------
 
-Semaphore::Semaphore(char* debugName, int initialValue)
+Semaphore::Semaphore(const char* debugName, int initialValue)
 {
     name = debugName;
     value = initialValue;
@@ -99,12 +99,21 @@ Semaphore::V()
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-Lock::Lock(char* debugName):name(debugName), thread(NULL), value(FREE), queue(new List())
+#ifdef SLEEP
+// Implement your locks and condition variables using the sleep/wakeup primitives (the
+// Thread::Sleep and Scheduler::ReadyToRun primitives). It will be necessary to disable
+// interrupts temporarily at strategic points, to eliminate the possibility of an ill-timed interrupt or
+// involuntary context switch. In particular, Thread::Sleep requires you to disable interrupts before
+// you call it. However, you may lose points for holding interrupts disabled when it is not necessary
+// to do so. Disabling interrupts is a blunt instrument and should be avoided unless necessary.
+Lock::Lock(const char* debugName):name(debugName), thread(NULL), value(FREE), queue(new List())
 { }
+
 Lock::~Lock()
 {
 	delete queue;
 }
+
 void Lock::Acquire()
 {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
@@ -116,6 +125,7 @@ void Lock::Acquire()
     thread = currentThread;
     (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 }
+
 void Lock::Release()
 {
 	Thread *nextThread;
@@ -124,10 +134,11 @@ void Lock::Release()
     if (nextThread != NULL)	   // make thread ready, consuming the V immediately
     	scheduler->ReadyToRun(nextThread);
     value = FREE;
+    thread = NULL;
     (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 }
 
-Condition::Condition(char* debugName):name(debugName), queue(new List())
+Condition::Condition(const char* debugName):name(debugName), queue(new List())
 { }
 
 Condition::~Condition()
@@ -150,11 +161,86 @@ void Condition::Signal(Lock* conditionLock)
 {
 	Thread *nextThread;
 	ASSERT(conditionLock->isHeldByCurrentThread());
-	// TODO
+	if (!queue->IsEmpty()) {
+		nextThread = (Thread *)queue->Remove();
+		scheduler->ReadyToRun(nextThread);
+	}
+}
+
+void Condition::Broadcast(Lock* conditionLock)
+{
+	Thread *nextThread;
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	while (!queue->IsEmpty()) {
+		nextThread = (Thread *)queue->Remove();
+		scheduler->ReadyToRun(nextThread);
+	}
+}
+
+
+#else
+// Implement your locks and condition variables using semaphores as the only synchronization
+// primitive. This time it is not necessary (or permitted) to disable interrupts in your code: the
+// semaphore primitives disable interrupts as necessary to implement the semaphore abstraction,
+// which you now have at your disposal as a sufficient "toehold" for synchronization.
+// Warning : this part of the assignment seems easy but it is actually the most subtle and difficult.
+// In particular, your solution for condition variables should guarantee that a Signal cannot affect a
+// subsequent Wait.
+Lock::Lock(const char* debugName):name(debugName),
+		thread(NULL),
+		sem(new Semaphore(debugName, 1))
+{ }
+
+Lock::~Lock()
+{
+	delete sem;
+}
+
+void Lock::Acquire()
+{
+	sem->P();
+    thread = currentThread;
+}
+
+void Lock::Release()
+{
+	thread = NULL;
+	sem->V();
+}
+
+Condition::Condition(const char* debugName):name(debugName),
+		sem(new Semaphore(debugName, 0)),
+{ }
+
+Condition::~Condition()
+{
+	delete sem;
+}
+
+void Condition::Wait(Lock* conditionLock)
+{
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	count++;
+	conditionLock->Release();
+	sem->P();
+	conditionLock->Acquire();
+}
+
+void Condition::Signal(Lock* conditionLock)
+{
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	if (count > 0) {
+		count--;
+		sem->V();
+	}
 }
 
 void Condition::Broadcast(Lock* conditionLock)
 {
 	ASSERT(conditionLock->isHeldByCurrentThread());
-	// TODO
+	while (count > 0) {
+		count--;
+		sem->V();
+	}
 }
+#endif

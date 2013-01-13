@@ -17,6 +17,8 @@
 #ifndef SYNCH_H
 #define SYNCH_H
 
+#define SLEEP
+
 #include "copyright.h"
 #include "thread.h"
 #include "list.h"
@@ -39,15 +41,15 @@
 
 class Semaphore {
   public:
-    Semaphore(char* debugName, int initialValue);	// set initial value
+    Semaphore(const char* debugName, int initialValue);	// set initial value
     ~Semaphore();   					// de-allocate semaphore
-    char* getName() { return name;}			// debugging assist
+    const char* getName() { return name;}			// debugging assist
     
     void P();	 // these are the only operations on a semaphore
     void V();	 // they are both *atomic*
     
   private:
-    char* name;        // useful for debugging
+    const char* name;        // useful for debugging
     int value;         // semaphore value, always >= 0
     List *queue;       // threads waiting in P() for the value to be > 0
 };
@@ -66,9 +68,9 @@ class Semaphore {
 
 class Lock {
   public:
-    Lock(char* debugName);  		// initialize lock to be FREE
+    Lock(const char* debugName);  		// initialize lock to be FREE
     ~Lock();				// deallocate lock
-    char* getName() { return name; }	// debugging assist
+    const char* getName() { return name; }	// debugging assist
 
     void Acquire(); // these are the only operations on a lock
     void Release(); // they are both *atomic*
@@ -79,11 +81,16 @@ class Lock {
 					// Condition variable ops below.
 
   private:
-    char* name;				// for debugging
+    const char* name;				// for debugging
     // plus some other stuff you'll need to define
     Thread *thread;		//the thread who holds this lock
+
+#ifdef SLEEP
     enum {FREE, BUSY} value;
     List *queue;
+#else
+    Semaphore *sem;
+#endif
 };
 // The following class defines a "condition variable".  A condition
 // variable does not have a value, but threads may be queued, waiting
@@ -119,10 +126,10 @@ class Lock {
 
 class Condition {
   public:
-    Condition(char* debugName);		// initialize condition to 
+    Condition(const char* debugName);		// initialize condition to
 					// "no one waiting"
     ~Condition();			// deallocate the condition
-    char* getName() { return (name); }
+    const char* getName() { return (name); }
     
     void Wait(Lock *conditionLock); 	// these are the 3 operations on 
 					// condition variables; releasing the 
@@ -133,7 +140,12 @@ class Condition {
 					// these operations
 
   private:
-    char* name;
+    const char* name;
+#ifdef SLEEP
     List *queue;
+#else
+    Semaphore *sem;
+    int count;
+#endif
 };
 #endif // SYNCH_H
