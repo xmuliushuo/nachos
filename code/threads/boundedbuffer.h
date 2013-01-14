@@ -14,7 +14,14 @@ class BoundedBuffer {
      // ('size' may be greater than 'maxsize')
      void Write(void *data, int size);
    private:
-     // ???
+     void *m_buffer;
+     Lock *m_lock;
+     int m_bufferSize;
+     int m_count;
+     int m_nextin;
+     int m_nextout;
+     Condition *m_bufferEmpty;
+     Condition *m_bufferFull;
 };
 
 #endif
