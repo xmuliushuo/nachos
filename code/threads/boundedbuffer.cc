@@ -10,7 +10,7 @@
 #include "system.h"
 
 BoundedBuffer::BoundedBuffer(int maxsize){
-	m_lock = new m_lock("buffer lock");
+	m_lock = new Lock("buffer lock");
 	m_bufferEmpty = new Condition("bufferEmpty");
 	m_bufferFull = new Condition("bufferFull");
     m_buffer = (void *)AllocBoundedArray(sizeof(void *) * maxsize);

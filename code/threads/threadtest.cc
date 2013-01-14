@@ -12,15 +12,21 @@
 #include "copyright.h"
 #include "system.h"
 #include "dllist.h"
+#include "elevator.h"
 
 // testnum is set in main.cc
-int testnum = 2;
+int testnum = 3;
 
 // T and N are used in lab1
 int T = 1;
 int N = 1;
 
 DLList *list;
+Building *building;
+int numFloors = 10;
+int numElevators = 1;
+int numRiders = 5;
+
 
 extern void InsertNItemsToDLList(DLList *list, int N);
 extern void RemoveNItemsFromDLList(DLList *list, int N);
@@ -87,6 +93,17 @@ ThreadTest2()
 	DLListTestThread(0);
 }
 
+void TestElevator()
+{
+    Thread *t = new Thread("elevator thread");
+    t->Fork(ElevatorThread, 0);
+}
+
+void ElevatorThread(int which)
+{
+
+}
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -102,9 +119,40 @@ ThreadTest()
     case 2:
     	ThreadTest2();
     	break;
+    case 3:
+    	TestElevator();
+    	break;
     default:
 		printf("No test specified.\n");
 		break;
     }
 }
 
+void rider(int id, int srcFloor, int dstFloor) {
+	Elevator *e;
+
+	if (srcFloor == dstFloor)
+	   return;
+
+	DEBUG('t',"Rider %d travelling from %d to %d\n",id,srcFloor,dstFloor);
+	do {
+	   if (srcFloor < dstFloor) {
+		  DEBUG('t', "Rider %d CallUp(%d)\n", id, srcFloor);
+		  building->CallUp(srcFloor);
+		  DEBUG('t', "Rider %d AwaitUp(%d)\n", id, srcFloor);
+		  e = building->AwaitUp(srcFloor);
+	   } else {
+		  DEBUG('t', "Rider %d CallDown(%d)\n", id, srcFloor);
+		  building->CallDown(srcFloor);
+		  DEBUG('t', "Rider %d AwaitDown(%d)\n", id, srcFloor);
+		  e = building->AwaitDown(srcFloor);
+	   }
+	   DEBUG('t', "Rider %d Enter()\n", id);
+	} while (!e->Enter()); // elevator might be full!
+
+	DEBUG('t', "Rider %d RequestFloor(%d)\n", id, dstFloor);
+	e->RequestFloor(dstFloor); // doesn't return until arrival
+	DEBUG('t', "Rider %d Exit()\n", id);
+	e->Exit();
+	DEBUG('t', "Rider %d finished\n", id);
+}
