@@ -221,7 +221,7 @@ Interrupt::Idle()
 	return;				// return in case there's now
 					// a runnable thread
     }
-
+    //return;
     // if there are no pending interrupts, and nothing is on the ready
     // queue, it is time to stop.   If the console or the network is 
     // operating, there are *always* pending interrupts, so this code

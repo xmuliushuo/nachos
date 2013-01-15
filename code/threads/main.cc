@@ -8,6 +8,9 @@
 //
 // 	Most of this file is not needed until later assignments.
 //
+// debugflags:
+// y: lab4
+// A: Alarm
 // Usage: nachos -d <debugflags> -rs <random seed #>
 //		-s -x <nachos file> -c <consoleIn> <consoleOut>
 //		-f -cp <unix file> <nachos file>
@@ -86,7 +89,6 @@ main(int argc, char **argv)
     RandomInit(time(NULL));
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
-    DEBUG('u', "testnum: %d\n", testnum);
 #ifdef THREADS
     for (int i = 0; i < argc; i++) {
     	DEBUG('u', "argv[%d]: %s\n", i, argv[i]);
@@ -100,7 +102,7 @@ main(int argc, char **argv)
 			argCount++;
 			break;
 		default:
-			testnum = 2;
+			testnum = 4;
 			break;
 		}
     }
@@ -113,6 +115,7 @@ main(int argc, char **argv)
         if (!strcmp(*argv, "-z"))               // print copyright
             printf (copyright);
 #ifdef USER_PROGRAM
+        DEBUG('y', "%s\n", *argv);
         if (!strcmp(*argv, "-x")) {        	// run a user program
 	    ASSERT(argc > 1);
             StartProcess(*(argv + 1));

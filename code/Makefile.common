@@ -53,6 +53,7 @@ THREAD_H =../threads/copyright.h\
 	../threads/table.h\
 	../threads/boundedbuffer.h\
 	../threads/eventbarrier.h\
+	../threads/alarm.h\
 	../threads/elevator.h
 
 THREAD_C =../threads/main.cc\
@@ -73,13 +74,14 @@ THREAD_C =../threads/main.cc\
 	../threads/table.cc\
 	../threads/boundedbuffer.cc\
 	../threads/eventbarrier.cc\
+	../threads/alarm.cc\
 	../threads/elevator.cc
 
 THREAD_S = ../threads/switch.s
 
 THREAD_O =main.o list.o scheduler.o synch.o synchlist.o system.o thread.o \
 	utility.o threadtest.o interrupt.o stats.o sysdep.o timer.o dllist.o \
-	dllist-driver.o table.o boundedbuffer.o eventbarrier.o elevator.o
+	dllist-driver.o table.o boundedbuffer.o eventbarrier.o alarm.o elevator.o
 
 USERPROG_H = ../userprog/addrspace.h\
 	../userprog/bitmap.h\
@@ -88,7 +90,8 @@ USERPROG_H = ../userprog/addrspace.h\
 	../machine/console.h\
 	../machine/machine.h\
 	../machine/mipssim.h\
-	../machine/translate.h
+	../machine/translate.h\
+	../userprog/memorymanager.h
 
 USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/bitmap.cc\
@@ -97,10 +100,12 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../machine/console.cc\
 	../machine/machine.cc\
 	../machine/mipssim.cc\
-	../machine/translate.cc
+	../machine/translate.cc\
+	../userprog/memorymanager.cc\
+	../userprog/syscall.cc
 
 USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o \
-	mipssim.o translate.o
+	mipssim.o translate.o memorymanager.o syscall.o
 
 VM_H = 
 VM_C = 

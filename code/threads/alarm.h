@@ -8,8 +8,18 @@
 #ifndef ALARM_H_
 #define ALARM_H_
 
-class Alarm {
+#include "dllist.h"
 
+class Alarm {
+public:
+	Alarm();
+	~Alarm();
+	void Pause(int howLong);
+	void WakeUp();
+	int GetPauseNum() { return pauseNum; }
+private:
+	DLList *m_queue;
+	int pauseNum;
 };
 
 

@@ -23,6 +23,7 @@
 
 #include "copyright.h"
 #include "synch.h"
+#include "system.h"
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -126,6 +127,11 @@ void Lock::Acquire()
     (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 }
 
+bool Lock::isHeldByCurrentThread()
+{ 
+	return (thread == currentThread); 
+}
+
 void Lock::Release()
 {
 	Thread *nextThread;
@@ -200,6 +206,11 @@ void Lock::Acquire()
 {
 	sem->P();
     thread = currentThread;
+}
+
+bool Lock::isHeldByCurrentThread()
+{ 
+	return (thread == currentThread); 
 }
 
 void Lock::Release()

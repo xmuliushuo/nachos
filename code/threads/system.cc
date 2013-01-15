@@ -22,6 +22,7 @@ Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
+Alarm *sysAlarm;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -33,6 +34,8 @@ SynchDisk   *synchDisk;
 
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
+MemoryManager *mm;
+Table *threadTable;
 #endif
 
 #ifdef NETWORK
@@ -64,8 +67,10 @@ extern void Cleanup();
 static void
 TimerInterruptHandler(int dummy)
 {
+    //DEBUG('A', "time interrupt\n");
+    sysAlarm->WakeUp();
     if (interrupt->getStatus() != IdleMode)
-	interrupt->YieldOnReturn();
+        interrupt->YieldOnReturn();
 }
 
 //----------------------------------------------------------------------
@@ -83,7 +88,7 @@ Initialize(int argc, char **argv)
 {
     int argCount;
     char* debugArgs = "";
-    bool randomYield = FALSE;
+    bool randomYield = TRUE;
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
@@ -142,8 +147,8 @@ Initialize(int argc, char **argv)
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
     if (randomYield)				// start the timer (if needed)
-	timer = new Timer(TimerInterruptHandler, 0, randomYield);
-
+        timer = new Timer(TimerInterruptHandler, 0, randomYield);
+    sysAlarm = new Alarm();
     threadToBeDestroyed = NULL;
 
     // We didn't explicitly allocate the current thread we are running in.
@@ -157,6 +162,8 @@ Initialize(int argc, char **argv)
     
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
+    mm = new MemoryManager(NumPhysPages);
+    threadTable = new Table(100);// TODO just set it to 100 isn't a good idea.
 #endif
 
 #ifdef FILESYS
@@ -186,6 +193,8 @@ Cleanup()
     
 #ifdef USER_PROGRAM
     delete machine;
+    delete mm;
+    delete threadTable;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -195,7 +204,7 @@ Cleanup()
 #ifdef FILESYS
     delete synchDisk;
 #endif
-    
+    delete sysAlarm;
     delete timer;
     delete scheduler;
     delete interrupt;

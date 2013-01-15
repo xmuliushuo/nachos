@@ -92,7 +92,9 @@ DLList::Remove(int *keyPtr)
 		currentThread->Yield();
 		first->prev = NULL;
 	}
-	*keyPtr = element->key;
+	if (keyPtr != NULL) {
+		*keyPtr = element->key;
+	}
 	delete element;
 	lock->Release();
 	return thing;

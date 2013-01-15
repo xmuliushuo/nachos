@@ -15,7 +15,7 @@
 #include "elevator.h"
 
 // testnum is set in main.cc
-int testnum = 3;
+int testnum = 2;
 
 // T and N are used in lab1
 int T = 1;
@@ -93,16 +93,30 @@ ThreadTest2()
 	DLListTestThread(0);
 }
 
+void ElevatorThread(int which)
+{
+
+}
+
 void TestElevator()
 {
     Thread *t = new Thread("elevator thread");
     t->Fork(ElevatorThread, 0);
 }
 
-void ElevatorThread(int which)
+void AlarmThread(int which)
 {
-
+	printf("Begin to sleep 1 second\n");
+	sysAlarm->Pause(1);
+	printf("Thread wake up\n");
 }
+
+void TestAlarm()
+{
+	Thread *t = new Thread("Test Alarm");
+	t->Fork(AlarmThread, 0);
+}
+
 
 //----------------------------------------------------------------------
 // ThreadTest
@@ -118,9 +132,13 @@ ThreadTest()
 		break;
     case 2:
     	ThreadTest2();
+    	delete list;
     	break;
     case 3:
     	TestElevator();
+    	break;
+    case 4:
+    	TestAlarm();
     	break;
     default:
 		printf("No test specified.\n");

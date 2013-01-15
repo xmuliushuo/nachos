@@ -65,3 +65,9 @@ matmult.o: matmult.c
 matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	../bin/coff2noff matmult.coff matmult
+
+circle.o: circle.c
+	$(CC) $(CFLAGS) -c circle.c
+matmult: circle.o start.o
+	$(LD) $(LDFLAGS) start.o circle.o -o circle.coff
+	../bin/coff2noff circle.coff circle

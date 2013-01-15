@@ -122,11 +122,14 @@ class Thread {
 
     int userRegisters[NumTotalRegs];	// user-level CPU register state
 
-  public:
+public:
     void SaveUserState();		// save user-level register state
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
+    void SetExitStatus(int status) { m_exitStatus = status; }
+private:
+    int m_exitStatus;
 #endif
 };
 

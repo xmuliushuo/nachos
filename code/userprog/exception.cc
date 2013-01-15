@@ -48,16 +48,56 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+SpaceId _Exec(char *filename);
+
+bool ReadStringFromUser(int addr, char *str);
+
 void
 ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
+    int arg1 = machine->ReadRegister(4);
+    int arg2 = machine->ReadRegister(5);
+    int arg3 = machine->ReadRegister(6);
+    int arg4 = machine->ReadRegister(7);
 
-    if ((which == SyscallException) && (type == SC_Halt)) {
-	DEBUG('a', "Shutdown, initiated by user program.\n");
-   	interrupt->Halt();
-    } else {
-	printf("Unexpected user mode exception %d %d\n", which, type);
-	ASSERT(FALSE);
+    if (which == SyscallException) {
+    	switch (type) {
+		case SC_Halt:
+			DEBUG('a', "Shutdown, initiated by user program.\n");
+	   		interrupt->Halt();
+	   		break;
+	   	case SC_Exec:
+	   		//DEBUG('a', "Exec.\n");
+	   		char filename[1024];
+	   		if (!ReadStringFromUser(arg1, filename))
+	   		{
+	   			printf("Read data from user space error.\n");
+	   			break;
+	   		}
+	   		DEBUG('a', "Exec(%s)\n", filename);
+	   		machine->WriteRegister(2, _Exec(filename));
+	   		break;
+	   	case SC_Exit:
+	   		DEBUG('a', "Exit()\n");
+	   		currentThread->SetExitStatus(arg1);
+	   		currentThread->Finish();
+	   		break;
+	   	default:
+	   		printf("Unexpected user mode exception %d %d\n", which, type);
+			ASSERT(FALSE);
+    	}
     }
+}
+
+
+bool ReadStringFromUser(int addr, char *str)
+{
+	int i = 0;
+	do {
+		if (!machine->ReadMem(addr + i, 1, (int *)&str[i])){
+			return false;
+		}
+	} while (str[i] != 0);
+	return true;
 }
