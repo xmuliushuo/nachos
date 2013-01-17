@@ -9,3 +9,8 @@ int MemoryManager::AllocNewPage()
 {
 	return m_physMemTable->Alloc((void *)1);
 }
+
+void MemoryManager::FreePage(int index)
+{
+	m_physMemTable->Release(index);
+}

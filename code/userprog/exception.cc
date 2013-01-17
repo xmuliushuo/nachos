@@ -48,7 +48,9 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
-SpaceId _Exec(char *filename);
+SpaceId _Exec(char *);
+int _Join(int);
+void _Exit(int);
 
 bool ReadStringFromUser(int addr, char *str);
 
@@ -80,13 +82,23 @@ ExceptionHandler(ExceptionType which)
 	   		break;
 	   	case SC_Exit:
 	   		DEBUG('a', "Exit()\n");
-	   		currentThread->SetExitStatus(arg1);
-	   		currentThread->Finish();
+	   		_Exit(arg1);
+	   		break;
+	   	case SC_Join:
+	   		DEBUG('a', "JOIN()\n");
+	   		machine->WriteRegister(2, _Join(arg1));
 	   		break;
 	   	default:
 	   		printf("Unexpected user mode exception %d %d\n", which, type);
 			ASSERT(FALSE);
     	}
+		int pc;
+		pc = machine->ReadRegister(PCReg);
+		machine->WriteRegister(PrevPCReg, pc);
+		pc = machine->ReadRegister(NextPCReg);
+		machine->WriteRegister(PCReg, pc);
+		pc += 4;
+		machine->WriteRegister(NextPCReg, pc);
     }
 }
 

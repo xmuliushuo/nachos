@@ -34,6 +34,7 @@ extern Alarm *sysAlarm;
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "memorymanager.h"
+#include "processmanager.h"
 extern Machine* machine;	// user program memory and registers
 extern MemoryManager* mm;
 extern Table* threadTable;

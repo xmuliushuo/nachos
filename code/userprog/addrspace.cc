@@ -113,20 +113,29 @@ bool AddrSpace::Setup(OpenFile *executable)
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
     //TODO I think I have to modify this later on
-    bzero(machine->mainMemory, size);
+    //bzero(machine->mainMemory, size);
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
             noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-            noffH.code.size, noffH.code.inFileAddr);
+        
+        for (i = 0; i < noffH.code.size; i++) {
+            int pAddr = translate(noffH.code.virtualAddr + i);
+            executable->ReadAt(&(machine->mainMemory[pAddr]),
+                1, noffH.code.inFileAddr + i);
+        }
     }
+    
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
             noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-            noffH.initData.size, noffH.initData.inFileAddr);
+
+        for (i = 0; i < noffH.initData.size; i++) {
+                int pAddr = translate(noffH.initData.virtualAddr + i);
+                executable->ReadAt(&(machine->mainMemory[pAddr]),
+                    1, noffH.initData.inFileAddr + i);
+        }
     }
     return TRUE;
 }
@@ -137,7 +146,6 @@ bool AddrSpace::Setup(OpenFile *executable)
 
 AddrSpace::~AddrSpace()
 {
-    // TODO I think that we should add some code here to release physical memeory
    delete pageTable;
 }
 
@@ -196,4 +204,11 @@ void AddrSpace::RestoreState()
 {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+int AddrSpace::translate(int virtAddr) 
+{
+    int virtPage =  virtAddr / PageSize;
+    int physPage = pageTable[virtPage].physicalPage;
+    return physPage * PageSize + virtAddr % PageSize;   
 }

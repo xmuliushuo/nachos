@@ -128,6 +128,7 @@ public:
 
     AddrSpace *space;			// User code this thread is running.
     void SetExitStatus(int status) { m_exitStatus = status; }
+    int GetExitStatus() { return m_exitStatus; }
 private:
     int m_exitStatus;
 #endif

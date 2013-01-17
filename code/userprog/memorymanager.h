@@ -1,5 +1,5 @@
-#ifndef MM_H
-#define MM_H
+#ifndef MEMORYMANAGER_H
+#define MEMORYMANAGER_H
 
 #include "table.h"
 
@@ -8,6 +8,7 @@ public:
 	MemoryManager(int numPhysPages);
 	~MemoryManager() { delete m_physMemTable; }
 	int AllocNewPage();
+	void FreePage(int);
 private:
 	int m_numPhysPages;
 	Table *m_physMemTable;

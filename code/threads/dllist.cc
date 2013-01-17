@@ -30,9 +30,9 @@ DLList::DLList():
 
 DLList::~DLList()
 {
-	delete lock;
     while (Remove(NULL) != NULL)
 	;	 // delete all the list elements
+	delete lock;
 }
 
 void
