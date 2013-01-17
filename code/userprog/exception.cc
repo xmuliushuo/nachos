@@ -85,7 +85,7 @@ ExceptionHandler(ExceptionType which)
 	   		_Exit(arg1);
 	   		break;
 	   	case SC_Join:
-	   		DEBUG('a', "JOIN()\n");
+	   		DEBUG('a', "thread:%d JOIN(%d)\n", currentThread->id, arg1);
 	   		machine->WriteRegister(2, _Join(arg1));
 	   		break;
 	   	default:
@@ -110,6 +110,6 @@ bool ReadStringFromUser(int addr, char *str)
 		if (!machine->ReadMem(addr + i, 1, (int *)&str[i])){
 			return false;
 		}
-	} while (str[i] != 0);
+	} while (str[i++] != 0);
 	return true;
 }

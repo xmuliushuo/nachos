@@ -91,7 +91,7 @@ Machine::ReadMem(int addr, int size, int *value)
     ExceptionType exception;
     int physicalAddress;
     
-    DEBUG('a', "Reading VA 0x%x, size %d\n", addr, size);
+    //DEBUG('a', "Reading VA 0x%x, size %d\n", addr, size);
     
     exception = Translate(addr, &physicalAddress, size, FALSE);
     if (exception != NoException) {
@@ -117,7 +117,7 @@ Machine::ReadMem(int addr, int size, int *value)
       default: ASSERT(FALSE);
     }
     
-    DEBUG('a', "\tvalue read = %8.8x\n", *value);
+    //DEBUG('a', "\tvalue read = %8.8x\n", *value);
     return (TRUE);
 }
 
@@ -140,7 +140,7 @@ Machine::WriteMem(int addr, int size, int value)
     ExceptionType exception;
     int physicalAddress;
      
-    DEBUG('a', "Writing VA 0x%x, size %d, value 0x%x\n", addr, size, value);
+    //DEBUG('a', "Writing VA 0x%x, size %d, value 0x%x\n", addr, size, value);
 
     exception = Translate(addr, &physicalAddress, size, TRUE);
     if (exception != NoException) {
@@ -191,7 +191,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    DEBUG('a', "\tTranslate 0x%x, %s: ", virtAddr, writing ? "write" : "read");
+    //DEBUG('a', "\tTranslate 0x%x, %s: ", virtAddr, writing ? "write" : "read");
 
 // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) || ((size == 2) && (virtAddr & 0x1))){
@@ -250,6 +250,6 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	entry->dirty = TRUE;
     *physAddr = pageFrame * PageSize + offset;
     ASSERT((*physAddr >= 0) && ((*physAddr + size) <= MemorySize));
-    DEBUG('a', "phys addr = 0x%x\n", *physAddr);
+    //DEBUG('a', "phys addr = 0x%x\n", *physAddr);
     return NoException;
 }

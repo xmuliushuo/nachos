@@ -181,6 +181,7 @@ void Condition::Broadcast(Lock* conditionLock)
 		nextThread = (Thread *)queue->Remove();
 		scheduler->ReadyToRun(nextThread);
 	}
+	DEBUG('a', "broadcast finished\n");
 }
 
 

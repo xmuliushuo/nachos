@@ -72,6 +72,7 @@ extern void ThreadPrint(int arg);
 //    
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
+class Process;
 
 class Thread {
   private:
@@ -127,10 +128,8 @@ public:
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
-    void SetExitStatus(int status) { m_exitStatus = status; }
-    int GetExitStatus() { return m_exitStatus; }
-private:
-    int m_exitStatus;
+    Process *process;
+    int id;
 #endif
 };
 

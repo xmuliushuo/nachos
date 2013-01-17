@@ -38,6 +38,7 @@ Thread::Thread(char* threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    id = -1;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -57,11 +58,10 @@ Thread::Thread(char* threadName)
 
 Thread::~Thread()
 {
-    DEBUG('t', "Deleting thread \"%s\"\n", name);
-
+    DEBUG('a', "Deleting thread \"%s\"\n", name);
     ASSERT(this != currentThread);
     if (stack != NULL)
-	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
+	   DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
 }
 
 //----------------------------------------------------------------------

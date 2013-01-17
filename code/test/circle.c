@@ -3,6 +3,6 @@
 int
 main()
 {
-    for ( ; ; );
+    Exit(0);
     /* not reached */
 }

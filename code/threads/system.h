@@ -37,7 +37,7 @@ extern Alarm *sysAlarm;
 #include "processmanager.h"
 extern Machine* machine;	// user program memory and registers
 extern MemoryManager* mm;
-extern Table* threadTable;
+extern ProcessManager* pm;
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 

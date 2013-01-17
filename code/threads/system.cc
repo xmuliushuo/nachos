@@ -35,7 +35,7 @@ SynchDisk   *synchDisk;
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
 MemoryManager *mm;
-Table *threadTable;
+ProcessManager *pm;
 #endif
 
 #ifdef NETWORK
@@ -163,7 +163,7 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     mm = new MemoryManager(NumPhysPages);
-    threadTable = new Table(100);// TODO just set it to 100 isn't a good idea.
+    pm = new ProcessManager(100);// TODO just set it to 100 isn't a good idea.
 #endif
 
 #ifdef FILESYS
@@ -194,7 +194,7 @@ Cleanup()
 #ifdef USER_PROGRAM
     delete machine;
     delete mm;
-    delete threadTable;
+    delete pm;
 #endif
 
 #ifdef FILESYS_NEEDED

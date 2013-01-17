@@ -71,3 +71,9 @@ circle.o: circle.c
 matmult: circle.o start.o
 	$(LD) $(LDFLAGS) start.o circle.o -o circle.coff
 	../bin/coff2noff circle.coff circle
+
+tree.o: tree.c
+	$(CC) $(CFLAGS) -c tree.c
+matmult: tree.o start.o
+	$(LD) $(LDFLAGS) start.o tree.o -o tree.coff
+	../bin/coff2noff tree.coff tree

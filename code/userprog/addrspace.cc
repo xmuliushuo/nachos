@@ -77,7 +77,7 @@ bool AddrSpace::Setup(OpenFile *executable)
     if ((noffH.noffMagic != NOFFMAGIC) && 
         (WordToHost(noffH.noffMagic) == NOFFMAGIC))
         SwapHeader(&noffH);
-    DEBUG('a', "noffH.noffMagic: %d\n", noffH.noffMagic);
+    //DEBUG('a', "noffH.noffMagic: %d\n", noffH.noffMagic);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
 // how big is address space?
@@ -92,8 +92,8 @@ bool AddrSpace::Setup(OpenFile *executable)
                         // at least until we have
                         // virtual memory
 
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-                    numPages, size);
+    //DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
+                    //numPages, size);
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
@@ -117,8 +117,8 @@ bool AddrSpace::Setup(OpenFile *executable)
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-            noffH.code.virtualAddr, noffH.code.size);
+        //DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
+            //noffH.code.virtualAddr, noffH.code.size);
         
         for (i = 0; i < noffH.code.size; i++) {
             int pAddr = translate(noffH.code.virtualAddr + i);
@@ -128,8 +128,8 @@ bool AddrSpace::Setup(OpenFile *executable)
     }
     
     if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-            noffH.initData.virtualAddr, noffH.initData.size);
+        //DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
+        //    noffH.initData.virtualAddr, noffH.initData.size);
 
         for (i = 0; i < noffH.initData.size; i++) {
                 int pAddr = translate(noffH.initData.virtualAddr + i);
@@ -178,7 +178,7 @@ AddrSpace::InitRegisters()
    // allocated the stack; but subtract off a bit, to make sure we don't
    // accidentally reference off the end!
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
-    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+    //DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
