@@ -8,9 +8,10 @@
 
 #include "table.h"
 
-Table::Table(int size):m_size(size),
+Table::Table(int size, char *debugName):m_size(size),
 	m_lock(new Lock("table lock")),
-	m_entry((void **)AllocBoundedArray(sizeof(void *) * size))
+	m_entry((void **)AllocBoundedArray(sizeof(void *) * size)),
+	name(debugName)
 {
 	if (m_entry == NULL)
 		printf("alloc error!");
@@ -43,7 +44,9 @@ void* Table::Get(int index)
 
 void Table::Release(int index)
 {
+//	DEBUG('a', "table.cc 46%s\n", name);
 	m_lock->Acquire();
 	m_entry[index] = NULL;
 	m_lock->Release();
+//	DEBUG('a', "table.cc 50%s\n", name);
 }

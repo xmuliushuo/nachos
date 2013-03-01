@@ -6,6 +6,7 @@
  */
 
 #include "elevator.h"
+#include "system.h"
 
 Building::Building(char *debugname, int numFloors, int numElevators)
 {
@@ -85,6 +86,8 @@ void Elevator::Exit()
 
 void Elevator::VisitFloor(int floor)
 {
+	int sleepTime = floor > currentfloor ? (floor - currentfloor) : (currentfloor - floor);
+	sysAlarm->Pause(sleepTime);
 	currentfloor = floor;
 }
 

@@ -28,9 +28,10 @@ int numElevators = 1;
 int numRiders = 5;
 
 
-extern void InsertNItemsToDLList(DLList *list, int N);
-extern void RemoveNItemsFromDLList(DLList *list, int N);
+extern void InsertNItemsToDLList(DLList *list, int N, int);
+extern void RemoveNItemsFromDLList(DLList *list, int N, int);
 
+void rider(int id, int srcFloor, int dstFloor);
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 
@@ -56,9 +57,9 @@ DLListTestThread(int which)
 {
 	// TODO
 	printf("*** thread %d starts\n", which);
-	InsertNItemsToDLList(list, N);
+	InsertNItemsToDLList(list, N, which);
 	currentThread->Yield();
-	RemoveNItemsFromDLList(list, N);
+	RemoveNItemsFromDLList(list, N, which);
 	currentThread->Yield();
 }
 
@@ -85,7 +86,7 @@ ThreadTest2()
 	DEBUG('t', "Entering ThreadTest2\n");
 	DEBUG('t', "T: %d\n", T);
 	DEBUG('t', "N: %d\n", N);
-	list = new DLList();
+	list = new DLList("test list");
 	for (int i = 1; i < T; i++) {
 		Thread *t = new Thread("forked thread");
 		t->Fork(DLListTestThread, i);
@@ -95,7 +96,10 @@ ThreadTest2()
 
 void ElevatorThread(int which)
 {
-
+	building = new Building("building", 10, 1);
+	while (1) {
+		rider(which, 0, 7);
+	}
 }
 
 void TestElevator()
@@ -126,24 +130,23 @@ void TestAlarm()
 void
 ThreadTest()
 {
-    switch (testnum) {
-    case 1:
+	switch (testnum) {
+	case 1:
 		ThreadTest1();
 		break;
-    case 2:
-    	ThreadTest2();
-    	delete list;
-    	break;
-    case 3:
-    	TestElevator();
-    	break;
-    case 4:
-    	TestAlarm();
-    	break;
-    default:
+	case 2:
+		ThreadTest2();
+		break;
+	case 3:
+		TestElevator();
+		break;
+	case 4:
+		TestAlarm();
+		break;
+	default:
 		printf("No test specified.\n");
 		break;
-    }
+	}
 }
 
 void rider(int id, int srcFloor, int dstFloor) {

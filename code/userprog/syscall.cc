@@ -57,9 +57,12 @@ int _Join(int id)
         p->m_exitConLock->Release();
     }
     int status = p->status;
+    printf("now going to release%d\n", id);
     pm->Release(id);
     printf("join thread %d\n", id);
     // TODO this must be deleted!!
+    delete p;
+    DEBUG('a', "syscall.cc 65\n");
     return status;
 }
 
@@ -73,10 +76,11 @@ void _Exit(int status)
     }
     delete currentThread->space;
     Process *p = currentThread->process;
-    //DEBUG('a', "thread %d delete space\n", currentThread->id);
+    DEBUG('a', "thread %d delete space\n", currentThread->id);
     if (p != NULL) {
-        p->status = status;
+       // p->status = status;
         p->m_exitConLock->Acquire();
+	p->status = status;
         p->m_exitCondition->Broadcast(p->m_exitConLock);
         p->m_exitConLock->Release();
     }

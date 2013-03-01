@@ -117,14 +117,15 @@ Lock::~Lock()
 
 void Lock::Acquire()
 {
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
-    if (value == BUSY) {
-    	queue->Append((void *)currentThread);
-    	currentThread->Sleep();
-    }
-    value = BUSY;
-    thread = currentThread;
-    (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+	ASSERT(!isHeldByCurrentThread());
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+	while (value == BUSY) { // Here we must use while.
+		queue->Append((void *)currentThread);
+		currentThread->Sleep();
+	}
+	value = BUSY;
+	thread = currentThread;
+	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 }
 
 bool Lock::isHeldByCurrentThread()
@@ -134,14 +135,19 @@ bool Lock::isHeldByCurrentThread()
 
 void Lock::Release()
 {
+	ASSERT(isHeldByCurrentThread());
+	//DEBUG('t', "Lock::Release\n");
 	Thread *nextThread;
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
-    nextThread = (Thread *)queue->Remove();
-    if (nextThread != NULL)	   // make thread ready, consuming the V immediately
-    	scheduler->ReadyToRun(nextThread);
-    value = FREE;
-    thread = NULL;
-    (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+	//DEBUG('t', "Lock::Release2\n");
+	nextThread = (Thread *)queue->Remove();
+	//DEBUG('t', "Lock::Release3\n");
+	if (nextThread != NULL)	   // make thread ready, consuming the V immediately
+		scheduler->ReadyToRun(nextThread);
+	value = FREE;
+	thread = NULL;
+	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+	//DEBUG('t', "Lock::Release return\n");
 }
 
 Condition::Condition(const char* debugName):name(debugName), queue(new List())
@@ -221,7 +227,7 @@ void Lock::Release()
 }
 
 Condition::Condition(const char* debugName):name(debugName),
-		sem(new Semaphore(debugName, 0)),
+		sem(new Semaphore(debugName, 0))
 { }
 
 Condition::~Condition()

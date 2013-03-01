@@ -9,23 +9,23 @@
 #include "utility.h"
 
 
-void InsertNItemsToDLList(DLList *list, int N)
+void InsertNItemsToDLList(DLList *list, int N, int which)
 {
 	int key;
 
 	for (int i = 0; i < N; ++i) {
 		key = Random() % 100;
 		list->SortedInsert(NULL, key);
-		printf("item was inserted with key = %d\n", key);
+		printf("Thread %d: item was inserted with key = %d\n", which, key);
 	}
 }
 
-void RemoveNItemsFromDLList(DLList *list, int N)
+void RemoveNItemsFromDLList(DLList *list, int N, int which)
 {
 	int key;
 	for (int i = 0; i < N; ++i) {
 		list->Remove(&key);
-		printf("item was removed with key = %d\n", key);
+		printf("Thread %d: item was removed with key = %d\n", which, key);
 	}
 }
 

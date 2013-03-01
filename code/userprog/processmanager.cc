@@ -9,9 +9,17 @@ Process::Process(Thread *t)
     status = -1;
 }
 
+Process::~Process()
+{
+//	DEBUG('a', "processmanager.cc 14\n");
+	delete m_exitConLock;
+	delete m_exitCondition;
+//	DEBUG('a', "processmanager.cc 17\n");
+}
+
 ProcessManager::ProcessManager(int maxProcessNum):
 	m_maxProcessNum(maxProcessNum),
-	m_processTable(new Table(maxProcessNum))
+	m_processTable(new Table(maxProcessNum, "pm"))
 {}
 
 int ProcessManager::GetFreeId(Process *thread)

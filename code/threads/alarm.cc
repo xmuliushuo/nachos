@@ -21,7 +21,7 @@ void static loopwhile(int which)
 }
 
 
-Alarm::Alarm():m_queue(new DLList())
+Alarm::Alarm():m_queue(new DLList("alarm list"))
 {}
 
 Alarm::~Alarm()

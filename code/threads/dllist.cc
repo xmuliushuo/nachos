@@ -21,10 +21,11 @@ DLLElement::DLLElement(void *itemPtr, int sortKey):
 
 }
 
-DLList::DLList():
+DLList::DLList(char *debugName):
 		first(NULL),
 		last(NULL),
-		lock(new Lock("dllist lock"))
+		lock(new Lock("dllist lock")),
+		name(debugName)
 {
 }
 
@@ -76,6 +77,7 @@ void *
 DLList::Remove(int *keyPtr)
 {
 	lock->Acquire();
+	DEBUG('t', "remove1\n");
 	if (IsEmpty()) {
 		lock->Release();
 		return NULL;
@@ -89,14 +91,18 @@ DLList::Remove(int *keyPtr)
 	}
 	else {
 		first = first->next;
-		currentThread->Yield();
+		//currentThread->Yield();
 		first->prev = NULL;
 	}
 	if (keyPtr != NULL) {
 		*keyPtr = element->key;
 	}
-	delete element;
+	DEBUG('t', "delete element1\n");
+	ASSERT(element != NULL);
+	//delete element;
+	DEBUG('t', "delete element2\n");
 	lock->Release();
+	DEBUG('t', "return\n");
 	return thing;
 }
 
@@ -104,6 +110,7 @@ DLList::Remove(int *keyPtr)
 bool
 DLList::IsEmpty()
 {
+	DEBUG('t', "%sIsEmpty\n", getName());
     if (first == NULL)
         return TRUE;
     else
@@ -115,6 +122,7 @@ void
 DLList::SortedInsert(void *item, int sortKey)
 {
 	lock->Acquire();
+	DEBUG('t', "SortedInsert\n");
     DLLElement *element = new DLLElement(item, sortKey);
     if (IsEmpty()) {
     	first = element;
@@ -130,7 +138,7 @@ DLList::SortedInsert(void *item, int sortKey)
     	for (DLLElement *ptr = first; ptr->next != NULL; ptr = ptr->next) {
     		if (sortKey < ptr->next->key) {
     			element->next = ptr->next;
-    			currentThread->Yield();
+    			//currentThread->Yield();
     			element->prev = ptr;
     			ptr->next->prev = element;
     			ptr->next = element;

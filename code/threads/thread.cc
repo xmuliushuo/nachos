@@ -38,9 +38,11 @@ Thread::Thread(char* threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
-    id = -1;
+
 #ifdef USER_PROGRAM
     space = NULL;
+    process = NULL;
+    id = -1;    
 #endif
 }
 

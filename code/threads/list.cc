@@ -217,13 +217,16 @@ List::SortedInsert(void *item, int sortKey)
 void *
 List::SortedRemove(int *keyPtr)
 {
+    //DEBUG('t', "List::SortedRemove\n");
     ListElement *element = first;
+    //DEBUG('t', "List::SortedRemove1\n");
     void *thing;
-
+    //DEBUG('t', "List::SortedRemove2\n");
     if (IsEmpty()) 
 	return NULL;
 
     thing = first->item;
+    //DEBUG('t', "List::SortedRemove3\n");
     if (first == last) {	// list had one item, now has none 
         first = NULL;
 	last = NULL;
@@ -232,7 +235,9 @@ List::SortedRemove(int *keyPtr)
     }
     if (keyPtr != NULL)
         *keyPtr = element->key;
+    //DEBUG('t', "List::SortedRemove4\n");
     delete element;
+    //DEBUG('t', "List::SortedRemove return\n");
     return thing;
 }
 

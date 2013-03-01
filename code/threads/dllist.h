@@ -21,7 +21,7 @@ public:
 
 class DLList {
 public:
-	DLList();	// initialize the list
+	DLList(char *debugName);	// initialize the list
 	~DLList();	// de-allocate the list
 
 	void Prepend(void *item); 	// add to head of list (set key = min_key-1)
@@ -35,10 +35,12 @@ public:
 	void SortedInsert(void *item, int sortKey);
 	void *SortedRemove(int sortKey);	// remove first item with key==sortKey
 										// return NULL if no such item exists
+	char *getName() { return name; }
 private:
 	DLLElement *first;// head of the list, NULL if empty
 	DLLElement *last;// last element of the list, NULL if empty
 	Lock *lock;
+	char *name;
 };
 
 

@@ -2,7 +2,7 @@
 
 MemoryManager::MemoryManager(int numPhysPages):
 	m_numPhysPages(numPhysPages),
-	m_physMemTable(new Table(numPhysPages))
+	m_physMemTable(new Table(numPhysPages, "mm"))
 { }
 
 int MemoryManager::AllocNewPage()

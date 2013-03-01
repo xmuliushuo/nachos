@@ -6,6 +6,7 @@
 class Process {
 public:
 	Process(Thread *t);
+	~Process();
     Thread *thread;
     int status;
     Lock *m_exitConLock;

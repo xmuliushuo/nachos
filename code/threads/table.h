@@ -34,7 +34,7 @@ files, etc.
 class Table {
    public:
      // create a table to hold at most 'size' entries.
-     Table(int size);
+     Table(int size, char *debugName);
      ~Table()
      {
     	 DeallocBoundedArray((char *)m_entry, m_size);
@@ -56,6 +56,7 @@ class Table {
      int m_size;
      Lock *m_lock;
      void **m_entry;
+     char *name;
 };
 
 #endif
