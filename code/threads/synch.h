@@ -17,7 +17,7 @@
 #ifndef SYNCH_H
 #define SYNCH_H
 
-#define SLEEP
+//#define SLEEP
 
 #include "copyright.h"
 #include "thread.h"

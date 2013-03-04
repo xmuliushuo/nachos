@@ -96,16 +96,19 @@ ThreadTest2()
 
 void ElevatorThread(int which)
 {
-	building = new Building("building", 10, 1);
-	while (1) {
-		rider(which, 0, 7);
-	}
+	//building = new Building("building", 10, 1);
+	// while (1) {
+	// 	rider(which, 0, 7);
+	// }
+	building->GetElevator(0)->Run();
 }
 
 void TestElevator()
 {
     Thread *t = new Thread("elevator thread");
-    t->Fork(ElevatorThread, 0);
+    building = new Building("building", 10, 1);
+    //t->Fork(ElevatorThread, 0);
+    building->GetElevator(0)->Run();
 }
 
 void AlarmThread(int which)

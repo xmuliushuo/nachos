@@ -38,6 +38,7 @@ class Table {
      ~Table()
      {
     	 DeallocBoundedArray((char *)m_entry, m_size);
+         delete m_lock;
      }
    
      // allocate a table slot for 'object'.
