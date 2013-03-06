@@ -35,6 +35,7 @@ int Table::Alloc(void *object)
 
 void* Table::Get(int index)
 {
+	ASSERT((index > 0) && (index < m_size));
 	void *thing;
 	m_lock->Acquire();
 	thing = m_entry[index];
@@ -44,9 +45,7 @@ void* Table::Get(int index)
 
 void Table::Release(int index)
 {
-//	DEBUG('a', "table.cc 46%s\n", name);
 	m_lock->Acquire();
 	m_entry[index] = NULL;
 	m_lock->Release();
-//	DEBUG('a', "table.cc 50%s\n", name);
 }

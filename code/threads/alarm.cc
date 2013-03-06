@@ -9,7 +9,7 @@
 #include "alarm.h"
 #include "system.h"
 
-const int TimerTicksPerSec = 400000;
+const int TimerTicksPerSec = 100000;
 
 void static loopwhile(int which)
 {

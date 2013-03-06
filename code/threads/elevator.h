@@ -18,62 +18,63 @@ existing interfaces.
 */
 
 class Elevator {
-   public:
-     Elevator(char *debugName, int numFloors, int myID);
-     ~Elevator();
-     char *getName() { return name; }
+	friend class Building;
+public:
+	Elevator(char *debugName, int numFloors, int myID);
+	~Elevator();
+	char *getName() { return name; }
 
-     // elevator control interface: called by Elevator thread
-     void OpenDoors();                //   signal exiters and enterers to action
-     void CloseDoors();               //   after exiters are out and enterers are in
-     void VisitFloor(int floor);      //   go to a particular floor
+	// elevator control interface: called by Elevator thread
+	void OpenDoors();                //   signal exiters and enterers to action
+	void CloseDoors();               //   after exiters are out and enterers are in
+	void VisitFloor(int floor);      //   go to a particular floor
 
-     // elevator rider interface (part 1): called by rider threads.
-     bool Enter();                    //   get in
-     void Exit();                     //   get out (iff destinationFloor)
-     void RequestFloor(int floor);    //   tell the elevator our destinationFloor
+	// elevator rider interface (part 1): called by rider threads.
+	bool Enter();                    //   get in
+	void Exit();                     //   get out (iff destinationFloor)
+	void RequestFloor(int floor);    //   tell the elevator our destinationFloor
 
-     void Run();
-     // insert your methods here, if needed
+	void Run();
+	// insert your methods here, if needed
 
-   private:
-     char *name;
+private:
+	char *name;
 
-     int currentfloor;           // floor where currently stopped
-     int occupancy;              // how many riders currently onboard
-     int m_id;
-     int m_numFloors;
-     EventBarrier **m_barrierIn;
-     EventBarrier **m_barrierOut;
-     enum {UP, DOWN, STOP} m_status;
-     
-     Condition *m_serCon; // the condition that the service list is empty
-     Lock *m_serConLock;  // the lock to be used with m_serCon also 
-                          // protects the m_serList.
-     int *m_serList;      // the service list, the ith item is 1 
-                          // means that there is a request on the ith floor
-     // insert your data structures here, if needed
+	int currentfloor;           // floor where currently stopped
+	int occupancy;              // how many riders currently onboard
+	int m_id;
+	int m_numFloors;
+	EventBarrier **m_barrierIn;
+	EventBarrier **m_barrierOut;
+	enum {UP, DOWN, STOP} m_status;
+
+	Condition *m_serCon; // the condition that the service list is empty
+	Lock *m_serConLock;  // the lock to be used with m_serCon also 
+	                  // protects the m_serList.
+	int *m_serList;      // the service list, the ith item is 1 
+	                  // means that there is a request on the ith floor
+	// insert your data structures here, if needed
 };
 
 class Building {
-   public:
-     Building(char *debugname, int numFloors, int numElevators);
-     ~Building();
-     char *getName() { return name; }
+public:
+	Building(char *debugname, int numFloors, int numElevators);
+	~Building();
+	char *getName() { return name; }
 
 
-     // elevator rider interface (part 2): called by rider threads
-     void CallUp(int fromFloor);      //   signal an elevator we want to go up
-     void CallDown(int fromFloor);    //   ... down
-     Elevator *AwaitUp(int fromFloor); // wait for elevator arrival & going up
-     Elevator *AwaitDown(int fromFloor); // ... down
-     Elevator *GetElevator(int index) { return elevator[index]; }
-   private:
-     char *name;
-     Elevator **elevator;         // the elevators in the building (array)
-     int m_numElevators;
+	// elevator rider interface (part 2): called by rider threads
+	void CallUp(int fromFloor);      //   signal an elevator we want to go up
+	void CallDown(int fromFloor);    //   ... down
+	Elevator *AwaitUp(int fromFloor); // wait for elevator arrival & going up
+	Elevator *AwaitDown(int fromFloor); // ... down
+	Elevator *GetElevator(int index) { return elevator[index]; }
+private:
+	char *name;
+	Elevator **elevator;         // the elevators in the building (array)
+	int m_numElevators;
 
-     // insert your data structures here, if needed
+	// insert your data structures here, if needed
 };
 
 #endif /* ELEVATOR_H_ */

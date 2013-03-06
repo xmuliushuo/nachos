@@ -4,7 +4,6 @@
  *  Created on: 2013-1-14
  *      Author: liushuo
  */
-
 #include "elevator.h"
 #include "system.h"
 
@@ -34,11 +33,23 @@ void Building::CallDown(int fromFloor)
 
 Elevator *Building::AwaitUp(int fromFloor)
 {
+	DEBUG('t', "awaitup1\n");
+	elevator[0]->m_serConLock->Acquire();
+	DEBUG('t', "awaitup2\n");
+	elevator[0]->m_serList[fromFloor] = 1;
+	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
+	elevator[0]->m_serConLock->Release();
+	elevator[0]->m_barrierIn[fromFloor]->Wait();
 	return elevator[0];
 }
 
 Elevator *Building::AwaitDown(int fromFloor)
 {
+	elevator[0]->m_serConLock->Acquire();
+	elevator[0]->m_serList[fromFloor] = 1;
+	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
+	elevator[0]->m_serConLock->Release();
+	elevator[0]->m_barrierIn[fromFloor]->Wait();
 	return elevator[0];
 }
 
@@ -47,6 +58,7 @@ Elevator::Elevator(char *debugName, int numFloors, int myID):
 	currentfloor(1),
 	m_status(STOP)
 {
+	DEBUG('t', "construction of elevator\n");
 	m_numFloors = numFloors;
 	m_id = myID;
 	m_barrierIn = (EventBarrier **)AllocBoundedArray(sizeof(EventBarrier *) * numFloors);
@@ -79,11 +91,17 @@ Elevator::~Elevator()
 bool Elevator::Enter()
 {
 	occupancy++;
+	m_barrierIn[currentfloor]->Complete();
 	return true;
 }
 
 void Elevator::RequestFloor(int floor)
 {
+	DEBUG('t', "requeset floor %d\n", floor);
+	m_serConLock->Acquire();
+	DEBUG('t', "requeset floor %d - 2\n", floor);
+	m_serList[floor] = 1;
+	m_serConLock->Release();
 	m_barrierOut[floor]->Wait();
 }
 
@@ -100,27 +118,31 @@ void Elevator::VisitFloor(int floor)
 	sysAlarm->Pause(sleepTime);
 	currentfloor = floor;
 	printf("%s visit floor %d.\n", name, floor);
-	m_serConLock->Acquire();
+	
 	if (m_serList[floor] == 1) {
 		OpenDoors();
 		CloseDoors();
+		m_serConLock->Acquire();
 		m_serList[floor] = 0;
+		m_serConLock->Release();
 	}
-	m_serConLock->Release();
+	
 }
 
 void Elevator::OpenDoors()
 {
 	printf("%s open door.\n", name);
-	m_barrierOut[currentfloor]->Signal();
-	m_barrierIn[currentfloor]->Signal();
+	if (m_barrierOut[currentfloor]->Waiters() > 0)
+		m_barrierOut[currentfloor]->Signal();
+	if (m_barrierIn[currentfloor]->Waiters() > 0)
+		m_barrierIn[currentfloor]->Signal();
 }
 
 void Elevator::CloseDoors()
 {
 	printf("%s close door.\n", name);
-	m_barrierOut[currentfloor]->Complete();
-	m_barrierIn[currentfloor]->Complete();
+	//m_barrierOut[currentfloor]->Complete();
+	//m_barrierIn[currentfloor]->Complete();
 }
 
 void Elevator::Run()
@@ -132,6 +154,10 @@ void Elevator::Run()
 	while(1) {
 		hasService = false;
 		m_serConLock->Acquire();
+		for (int i = 1; i < 10; i++) {
+			DEBUG('t', "%d, ", m_serList[i]);
+		}
+		DEBUG('t', "\n");
 		switch (m_status) {
 		case UP:
 			for (i = currentfloor; i <= m_numFloors; i++) {
@@ -170,17 +196,25 @@ void Elevator::Run()
 				if (m_serList[i] == 1) {
 					hasService = true;
 					nextFloor = i;
+					break;
 				}
 			}
 			break;
 		}
+		for (int i = 1; i < 10; i++) {
+			DEBUG('t', "%d, ", m_serList[i]);
+		}
+		DEBUG('t', "\n");
 		if (hasService == false) {
 			nextFloor = -1;
 			m_status = STOP;
 			printf("There is no request now, so elevator %s stops on the %dth floor.\n", name, currentfloor);
 			m_serCon->Wait(m_serConLock);
+			DEBUG('t', "elevator thread wake up\n");
 		}
 		m_serConLock->Release();
+		DEBUG('t', "elevator thread wake up2\n");
+		DEBUG('t', "nextFloor: %d\n", nextFloor);
 		if (nextFloor != -1) {
 			if (nextFloor > currentfloor) {
 				m_status = UP;
@@ -190,6 +224,7 @@ void Elevator::Run()
 				m_status = DOWN;
 				VisitFloor(currentfloor - 1);
 			}
+			else VisitFloor(currentfloor);
 		}
 	}
 }

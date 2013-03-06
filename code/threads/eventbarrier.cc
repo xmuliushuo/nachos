@@ -23,16 +23,19 @@ EventBarrier::~EventBarrier()
 
 void EventBarrier::Signal()
 {
+	DEBUG('t', "%s signal\n", currentThread->getName());
 	m_lock->Acquire();
 	m_status = SIGNALED;
 	m_barrier->Broadcast(m_lock);
 	m_complete->Wait(m_lock);
 	m_status = UNSIGNALED;
 	m_lock->Release();
+	DEBUG('t', "%s signal return\n", currentThread->getName());
 }
 
 void EventBarrier::Wait()
 {
+	DEBUG('t', "%s wait\n", currentThread->getName());
 	m_lock->Acquire();
 	m_waitNum++;
 	if (m_status == SIGNALED) {
@@ -41,10 +44,12 @@ void EventBarrier::Wait()
 	}
 	m_barrier->Wait(m_lock);
 	m_lock->Release();
+	DEBUG('t', "%s wait return\n", currentThread->getName());
 }
 
 void EventBarrier::Complete()
 {
+	DEBUG('t', "%s Complete\n", currentThread->getName());
 	m_lock->Acquire();
 	if (m_waitNum == 1) {
 		m_complete->Broadcast(m_lock);
@@ -55,6 +60,7 @@ void EventBarrier::Complete()
 		m_complete->Wait(m_lock);
 	}
 	m_lock->Release();
+	DEBUG('t', "%s Complete return\n", currentThread->getName());
 }
 
 

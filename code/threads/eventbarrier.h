@@ -9,6 +9,7 @@
 #define EVENTBARRIER_H_
 
 #include "synch.h"
+#include "system.h"
 
 class EventBarrier {
 public:

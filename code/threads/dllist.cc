@@ -77,7 +77,7 @@ void *
 DLList::Remove(int *keyPtr)
 {
 	lock->Acquire();
-	DEBUG('t', "remove1\n");
+	//DEBUG('t', "remove1\n");
 	if (IsEmpty()) {
 		lock->Release();
 		return NULL;
@@ -97,12 +97,12 @@ DLList::Remove(int *keyPtr)
 	if (keyPtr != NULL) {
 		*keyPtr = element->key;
 	}
-	DEBUG('t', "delete element1\n");
+	//DEBUG('t', "delete element1\n");
 	ASSERT(element != NULL);
 	//delete element;
-	DEBUG('t', "delete element2\n");
+	//DEBUG('t', "delete element2\n");
 	lock->Release();
-	DEBUG('t', "return\n");
+	//DEBUG('t', "return\n");
 	return thing;
 }
 
@@ -110,7 +110,7 @@ DLList::Remove(int *keyPtr)
 bool
 DLList::IsEmpty()
 {
-	DEBUG('t', "%sIsEmpty\n", getName());
+	//DEBUG('t', "%sIsEmpty\n", getName());
     if (first == NULL)
         return TRUE;
     else
@@ -122,7 +122,7 @@ void
 DLList::SortedInsert(void *item, int sortKey)
 {
 	lock->Acquire();
-	DEBUG('t', "SortedInsert\n");
+	//DEBUG('t', "SortedInsert\n");
     DLLElement *element = new DLLElement(item, sortKey);
     if (IsEmpty()) {
     	first = element;
