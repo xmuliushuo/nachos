@@ -25,7 +25,7 @@ DLList *list;
 Building *building;
 int numFloors = 10;
 int numElevators = 1;
-int numRiders = 5;
+int numRiders = 1;
 
 
 extern void InsertNItemsToDLList(DLList *list, int N, int);
@@ -94,22 +94,33 @@ ThreadTest2()
 	DLListTestThread(0);
 }
 
-void ElevatorThread(int which)
+void RiderThread(int which)
 {
 	//building = new Building("building", 10, 1);
 	sysAlarm->Pause(1);
+	int from, to;
 	while (1) {
-		rider(which, 1, 7);
+		from = Random() % numFloors;
+		to = Random() % numFloors;
+		printf("%d %d\n", from, to);
+		// from = 1;
+		// to = 7;
+		if (to == from) sysAlarm->Pause(1);
+		else rider(which, from, to);
+		// from = 7;
+		// to = 2;
+		// rider(which, from, to);
 	}
 	//building->GetElevator(0)->Run();
 }
 
 void TestElevator()
 {
-    Thread *t = new Thread("rider thread");
-    building = new Building("building", 10, 1);
-    t->Fork(ElevatorThread, 0);
-    building->GetElevator(0)->Run();
+	Thread *t = new Thread("rider thread");
+	building = new Building("building", 10, 1);
+	for (int i = 0; i < numRiders; i++)
+		t->Fork(RiderThread, i);
+	building->GetElevator(0)->Run();
 }
 
 void AlarmThread(int which)
@@ -159,25 +170,25 @@ void rider(int id, int srcFloor, int dstFloor) {
 	if (srcFloor == dstFloor)
 	   return;
 
-	DEBUG('t',"Rider %d travelling from %d to %d\n",id,srcFloor,dstFloor);
+	DEBUG('a',"Rider %d travelling from %d to %d\n",id,srcFloor,dstFloor);
 	do {
 	   if (srcFloor < dstFloor) {
-		  DEBUG('t', "Rider %d CallUp(%d)\n", id, srcFloor);
+		  DEBUG('a', "Rider %d CallUp(%d)\n", id, srcFloor);
 		  building->CallUp(srcFloor);
-		  DEBUG('t', "Rider %d AwaitUp(%d)\n", id, srcFloor);
+		  DEBUG('a', "Rider %d AwaitUp(%d)\n", id, srcFloor);
 		  e = building->AwaitUp(srcFloor);
 	   } else {
-		  DEBUG('t', "Rider %d CallDown(%d)\n", id, srcFloor);
+		  DEBUG('a', "Rider %d CallDown(%d)\n", id, srcFloor);
 		  building->CallDown(srcFloor);
-		  DEBUG('t', "Rider %d AwaitDown(%d)\n", id, srcFloor);
+		  DEBUG('a', "Rider %d AwaitDown(%d)\n", id, srcFloor);
 		  e = building->AwaitDown(srcFloor);
 	   }
-	   DEBUG('t', "Rider %d Enter()\n", id);
+	   DEBUG('a', "Rider %d Enter()\n", id);
 	} while (!e->Enter()); // elevator might be full!
 
-	DEBUG('t', "Rider %d RequestFloor(%d)\n", id, dstFloor);
+	DEBUG('a', "Rider %d RequestFloor(%d)\n", id, dstFloor);
 	e->RequestFloor(dstFloor); // doesn't return until arrival
-	DEBUG('t', "Rider %d Exit()\n", id);
+	DEBUG('a', "Rider %d Exit()\n", id);
 	e->Exit();
-	DEBUG('t', "Rider %d finished\n", id);
+	DEBUG('a', "Rider %d finished\n", id);
 }

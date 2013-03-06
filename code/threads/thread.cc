@@ -60,7 +60,7 @@ Thread::Thread(char* threadName)
 
 Thread::~Thread()
 {
-    DEBUG('a', "Deleting thread \"%s\"\n", name);
+    DEBUG('t', "Deleting thread \"%s\"\n", name);
     ASSERT(this != currentThread);
     if (stack != NULL)
 	   DeallocBoundedArray((char *) stack, StackSize * sizeof(int));

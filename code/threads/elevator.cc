@@ -33,6 +33,7 @@ void Building::CallDown(int fromFloor)
 
 Elevator *Building::AwaitUp(int fromFloor)
 {
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 	DEBUG('t', "awaitup1\n");
 	elevator[0]->m_serConLock->Acquire();
 	DEBUG('t', "awaitup2\n");
@@ -40,22 +41,25 @@ Elevator *Building::AwaitUp(int fromFloor)
 	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
 	elevator[0]->m_serConLock->Release();
 	elevator[0]->m_barrierIn[fromFloor]->Wait();
+	(void) interrupt->SetLevel(oldLevel);
 	return elevator[0];
 }
 
 Elevator *Building::AwaitDown(int fromFloor)
 {
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 	elevator[0]->m_serConLock->Acquire();
 	elevator[0]->m_serList[fromFloor] = 1;
 	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
-	elevator[0]->m_serConLock->Release();
+	elevator[0]->m_serConLock->Release();// here is a time window
 	elevator[0]->m_barrierIn[fromFloor]->Wait();
+	(void) interrupt->SetLevel(oldLevel);
 	return elevator[0];
 }
 
 Elevator::Elevator(char *debugName, int numFloors, int myID):
 	name(debugName),
-	currentfloor(1),
+	currentfloor(0),
 	m_status(STOP)
 {
 	DEBUG('t', "construction of elevator\n");
@@ -71,8 +75,8 @@ Elevator::Elevator(char *debugName, int numFloors, int myID):
 	}
 	m_serCon = new Condition("service condition");
 	m_serConLock = new Lock("service condition lock");
-	m_serList = new int[m_numFloors + 1];
-	for (int i = 1; i <= numFloors; ++i) m_serList[i] = 0;
+	m_serList = new int[m_numFloors];
+	for (int i = 0; i < numFloors; ++i) m_serList[i] = 0;
 }
 
 Elevator::~Elevator()
@@ -97,10 +101,11 @@ bool Elevator::Enter()
 
 void Elevator::RequestFloor(int floor)
 {
-	DEBUG('t', "requeset floor %d\n", floor);
+	// DEBUG('t', "requeset floor %d\n", floor);
 	m_serConLock->Acquire();
-	DEBUG('t', "requeset floor %d - 2\n", floor);
+	// DEBUG('t', "requeset floor %d - 2\n", floor);
 	m_serList[floor] = 1;
+	m_serCon->Signal(m_serConLock);
 	m_serConLock->Release();
 	m_barrierOut[floor]->Wait();
 }
@@ -120,11 +125,11 @@ void Elevator::VisitFloor(int floor)
 	printf("%s visit floor %d.\n", name, floor);
 	
 	if (m_serList[floor] == 1) {
-		OpenDoors();
-		CloseDoors();
 		m_serConLock->Acquire();
 		m_serList[floor] = 0;
 		m_serConLock->Release();
+		OpenDoors();
+		CloseDoors();
 	}
 	
 }
@@ -132,8 +137,10 @@ void Elevator::VisitFloor(int floor)
 void Elevator::OpenDoors()
 {
 	printf("%s open door.\n", name);
+	printf("%d riders will go out\n", m_barrierOut[currentfloor]->Waiters());
 	if (m_barrierOut[currentfloor]->Waiters() > 0)
 		m_barrierOut[currentfloor]->Signal();
+	printf("%d riders will go in\n", m_barrierIn[currentfloor]->Waiters());
 	if (m_barrierIn[currentfloor]->Waiters() > 0)
 		m_barrierIn[currentfloor]->Signal();
 }
@@ -147,27 +154,27 @@ void Elevator::CloseDoors()
 
 void Elevator::Run()
 {
-	currentfloor = 1;
+	currentfloor = 0;
 	bool hasService;
 	int i;
 	int nextFloor = -1;
 	while(1) {
 		hasService = false;
 		m_serConLock->Acquire();
-		for (int i = 1; i < 10; i++) {
-			DEBUG('t', "%d, ", m_serList[i]);
-		}
-		DEBUG('t', "\n");
+		// for (int i = 0; i < m_numFloors; i++) {
+		// 	DEBUG('a', "%d, ", m_serList[i]);
+		// }
+		// DEBUG('a', "\n");
 		switch (m_status) {
 		case UP:
-			for (i = currentfloor; i <= m_numFloors; i++) {
+			for (i = currentfloor; i < m_numFloors; i++) {
 				if (m_serList[i] == 1) {
 					hasService = true;
 					nextFloor = i;
 				}
 			}
 			if (hasService == false) {
-				for (i = currentfloor; i >= 1; i--) {
+				for (i = currentfloor; i >= 0; i--) {
 					if (m_serList[i] == 1) {
 						hasService = true;
 						nextFloor = i;
@@ -176,14 +183,14 @@ void Elevator::Run()
 			}
 			break;
 		case DOWN:
-			for (i = currentfloor; i >= 1; i--) {
+			for (i = currentfloor; i >= 0; i--) {
 				if (m_serList[i] == 1) {
 					hasService = true;
 					nextFloor = i;
 				}
 			}
 			if (hasService == false) {
-				for (i = currentfloor; i <= m_numFloors; i++) {
+				for (i = currentfloor; i < m_numFloors; i++) {
 					if (m_serList[i] == 1) {
 						hasService = true;
 						nextFloor = i;
@@ -192,7 +199,7 @@ void Elevator::Run()
 			}
 			break;
 		case STOP:
-			for (i = 1; i <= m_numFloors; i++) {
+			for (i = 0; i < m_numFloors; i++) {
 				if (m_serList[i] == 1) {
 					hasService = true;
 					nextFloor = i;
@@ -201,10 +208,6 @@ void Elevator::Run()
 			}
 			break;
 		}
-		for (int i = 1; i < 10; i++) {
-			DEBUG('t', "%d, ", m_serList[i]);
-		}
-		DEBUG('t', "\n");
 		if (hasService == false) {
 			nextFloor = -1;
 			m_status = STOP;
