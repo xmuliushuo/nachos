@@ -23,9 +23,9 @@ int N = 1;
 
 DLList *list;
 Building *building;
-int numFloors = 10;
+int numFloors = 5;
 int numElevators = 1;
-int numRiders = 1;
+int numRiders = 2;
 
 
 extern void InsertNItemsToDLList(DLList *list, int N, int);
@@ -102,7 +102,7 @@ void RiderThread(int which)
 	while (1) {
 		from = Random() % numFloors;
 		to = Random() % numFloors;
-		printf("%d %d\n", from, to);
+		// printf("%d %d\n", from, to);
 		// from = 1;
 		// to = 7;
 		if (to == from) sysAlarm->Pause(1);
@@ -116,10 +116,11 @@ void RiderThread(int which)
 
 void TestElevator()
 {
-	Thread *t = new Thread("rider thread");
 	building = new Building("building", 10, 1);
-	for (int i = 0; i < numRiders; i++)
+	for (int i = 0; i < numRiders; i++) {
+		Thread *t = new Thread("rider thread");
 		t->Fork(RiderThread, i);
+	}
 	building->GetElevator(0)->Run();
 }
 

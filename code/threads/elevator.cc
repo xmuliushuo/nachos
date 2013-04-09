@@ -7,6 +7,8 @@
 #include "elevator.h"
 #include "system.h"
 
+extern Building *building;
+
 Building::Building(char *debugname, int numFloors, int numElevators)
 {
 	name = debugname;
@@ -15,6 +17,8 @@ Building::Building(char *debugname, int numFloors, int numElevators)
 	for (int i = 0; i < numElevators; i++) {
 		elevator[i] = new Elevator("elevator", numFloors, i);
 	}
+	m_noElevator = new Condition("Building: no elevator condition");
+	m_noElevatorLock = new Lock("Buidling: no elevator condition lock");
 }
 
 Building::~Building()
@@ -23,6 +27,8 @@ Building::~Building()
 		delete elevator[i];
 	}
 	DeallocBoundedArray((char *)elevator, m_numElevators);
+	delete m_noElevator;
+	delete m_noElevatorLock;
 }
 
 void Building::CallUp(int fromFloor)
@@ -33,28 +39,68 @@ void Building::CallDown(int fromFloor)
 
 Elevator *Building::AwaitUp(int fromFloor)
 {
+	// find a proper elevator
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
-	DEBUG('t', "awaitup1\n");
-	elevator[0]->m_serConLock->Acquire();
-	DEBUG('t', "awaitup2\n");
-	elevator[0]->m_serList[fromFloor] = 1;
-	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
-	elevator[0]->m_serConLock->Release();
-	elevator[0]->m_barrierIn[fromFloor]->Wait();
-	(void) interrupt->SetLevel(oldLevel);
-	return elevator[0];
+	int i;
+	while (1) {
+		for (i = 0; i < m_numElevators; i++) {
+			if (((elevator[i]->m_status == Elevator::UP) && (fromFloor > elevator[i]->currentfloor)) 
+				|| elevator[i]->m_status == Elevator::STOP)
+				break;
+		}
+		if (i == m_numElevators) {
+			m_noElevatorLock->Acquire();
+			m_noElevator->Wait(m_noElevatorLock);
+			m_noElevatorLock->Release();
+		}
+		else {
+			elevator[i]->m_serConLock->Acquire();
+			elevator[i]->m_serList[fromFloor] = 1;
+			elevator[i]->m_serCon->Signal(elevator[0]->m_serConLock);
+			elevator[i]->m_serConLock->Release();
+			elevator[i]->m_barrierIn[fromFloor]->Wait();
+			if ((elevator[i]->m_status == Elevator::UP) || (elevator[i]->m_status == Elevator::STOP)) {
+				(void) interrupt->SetLevel(oldLevel);
+				return elevator[i];
+			}
+			else {
+				elevator[i]->m_barrierIn[fromFloor]->Complete();
+			}
+		}
+	}
 }
 
 Elevator *Building::AwaitDown(int fromFloor)
 {
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
-	elevator[0]->m_serConLock->Acquire();
-	elevator[0]->m_serList[fromFloor] = 1;
-	elevator[0]->m_serCon->Signal(elevator[0]->m_serConLock);
-	elevator[0]->m_serConLock->Release();// here is a time window
-	elevator[0]->m_barrierIn[fromFloor]->Wait();
-	(void) interrupt->SetLevel(oldLevel);
-	return elevator[0];
+	int i;
+	while(1) {
+		for (i = 0; i < m_numElevators; i++) {
+			if (((elevator[i]->m_status == Elevator::DOWN) && (fromFloor < elevator[i]->currentfloor)) 
+				|| elevator[i]->m_status == Elevator::STOP)
+				break;
+		}
+		if (i == m_numElevators) {
+			m_noElevatorLock->Acquire();
+			m_noElevator->Wait(m_noElevatorLock);
+			m_noElevatorLock->Release();
+		}
+		else {
+			elevator[i]->m_serConLock->Acquire();
+			elevator[i]->m_serList[fromFloor] = 1;
+			elevator[i]->m_serCon->Signal(elevator[0]->m_serConLock);
+			elevator[i]->m_serConLock->Release();
+			// here is a time window, so I have to set the interrupt off.
+			elevator[i]->m_barrierIn[fromFloor]->Wait();
+			if ((elevator[i]->m_status == Elevator::DOWN) || (elevator[i]->m_status == Elevator::STOP)) {
+				(void) interrupt->SetLevel(oldLevel);
+				return elevator[i];
+			}
+			else {
+				elevator[i]->m_barrierIn[fromFloor]->Complete();
+			}
+		}
+	}
 }
 
 Elevator::Elevator(char *debugName, int numFloors, int myID):
@@ -131,16 +177,18 @@ void Elevator::VisitFloor(int floor)
 		OpenDoors();
 		CloseDoors();
 	}
-	
+	building->m_noElevatorLock->Acquire();
+	building->m_noElevator->Broadcast(building->m_noElevatorLock);
+	building->m_noElevatorLock->Release();
 }
 
 void Elevator::OpenDoors()
 {
 	printf("%s open door.\n", name);
-	printf("%d riders will go out\n", m_barrierOut[currentfloor]->Waiters());
+	// printf("%d riders will go out\n", m_barrierOut[currentfloor]->Waiters());
 	if (m_barrierOut[currentfloor]->Waiters() > 0)
 		m_barrierOut[currentfloor]->Signal();
-	printf("%d riders will go in\n", m_barrierIn[currentfloor]->Waiters());
+	// printf("%d riders will go in\n", m_barrierIn[currentfloor]->Waiters());
 	if (m_barrierIn[currentfloor]->Waiters() > 0)
 		m_barrierIn[currentfloor]->Signal();
 }

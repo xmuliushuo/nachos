@@ -57,6 +57,7 @@ private:
 };
 
 class Building {
+	friend class Elevator;
 public:
 	Building(char *debugname, int numFloors, int numElevators);
 	~Building();
@@ -73,7 +74,8 @@ private:
 	char *name;
 	Elevator **elevator;         // the elevators in the building (array)
 	int m_numElevators;
-
+	Condition *m_noElevator;
+	Lock *m_noElevatorLock;
 	// insert your data structures here, if needed
 };
 
