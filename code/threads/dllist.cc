@@ -163,7 +163,7 @@ DLList::SortedRemove(int sortKey)
 		lock->Release();
 		return NULL;
 	}
-	DLLElement *element;
+	DLLElement *element = NULL;
 	for (DLLElement *ptr = first; ptr != NULL; ptr = ptr->next) {
 		if (sortKey == ptr->key) {
 			element = ptr;
@@ -188,8 +188,8 @@ DLList::SortedRemove(int sortKey)
 		}
 	}
 	if (element != NULL) {
-		delete element;
 		void *thing = element->item;
+		delete element;
 		lock->Release();
 		return thing;
 	}
